@@ -2,6 +2,7 @@ package com.swimpoolschedule.service;
 
 import com.swimpoolschedule.dto.AlunoSummary;
 import com.swimpoolschedule.enums.Horario;
+import com.swimpoolschedule.enums.MetodoPagamento;
 import com.swimpoolschedule.model.Turma;
 import com.swimpoolschedule.model.Usuario;
 import com.swimpoolschedule.repository.TurmaRepository;
@@ -68,6 +69,13 @@ public class AgendamentoService {
                 .anyMatch(u -> u.getMatricula().equals(matricula));
         if (jaMatriculado) {
             throw new IllegalArgumentException("Aluno já está matriculado neste horário.");
+        }
+        // Payment rule: students with pagamentoEmDia == false cannot schedule,
+        // except when their payment method is BOLSISTA — bolsistas are always allowed.
+        if (aluno.getMetodoPagamento() != MetodoPagamento.BOLSISTA) {
+            if (!Boolean.TRUE.equals(aluno.getPagamentoEmDia())) {
+                throw new IllegalStateException("Pagamento em atraso, não é possível agendar.");
+            }
         }
 
         if (turma.getAlunos().size() >= turma.getMaxCapacidade()) {

@@ -41,7 +41,8 @@ public class Usuario {
     @NotNull(message = "metodoPagamento é obrigatório")
     @Enumerated(EnumType.STRING)
     @JsonProperty("metodoPagamento")
-    @JsonAlias({"paymentMethod"})
+    // Accept several common JSON property names (camelCase, snake_case, english variant)
+    @JsonAlias({"paymentMethod", "payment_method", "paymentmethod", "metodo_pagamento"})
     private MetodoPagamento metodoPagamento;
 
     // Map<dia, horariosCommaSeparated>

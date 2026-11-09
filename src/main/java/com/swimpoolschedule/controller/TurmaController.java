@@ -1,5 +1,6 @@
 package com.swimpoolschedule.controller;
 
+import com.swimpoolschedule.exception.BadRequestException;
 import com.swimpoolschedule.model.Turma;
 import com.swimpoolschedule.repository.TurmaRepository;
 import org.springframework.http.ResponseEntity;
@@ -38,24 +39,27 @@ public class TurmaController {
     public ResponseEntity<Turma> updateCapacidade(
             @PathVariable Long id,
             @RequestParam int maxCapacidade) {
-        //Todo: melhorar nome de variavel t pra uma mais descritiva.
-        return turmaRepository.findById(id).map(t -> {
-            //Todo: criar pasta com exceptions customizadas e lançar uma exception customizada aqui, para evitar o uso de IllegalArgumentException.
-            if (maxCapacidade < t.getAlunos().size()) {
-                throw new IllegalArgumentException(
-                        "Nova capacidade (" + maxCapacidade + ") é menor que o número atual de alunos (" + t.getAlunos().size() + ").");
+        // Use a descriptive variable name instead of a single-letter lambda param.
+        return turmaRepository.findById(id).map(turma -> {
+            // Use a domain-specific exception to provide clearer semantics
+            // instead of throwing a raw IllegalArgumentException.
+            if (maxCapacidade < turma.getAlunos().size()) {
+                throw new BadRequestException(
+                        "Nova capacidade (" + maxCapacidade + ") é menor que o número atual de alunos (" + turma.getAlunos().size() + ").");
             }
-            t.setMaxCapacidade(maxCapacidade);
-            return ResponseEntity.ok(turmaRepository.save(t));
+            turma.setMaxCapacidade(maxCapacidade);
+            return ResponseEntity.ok(turmaRepository.save(turma));
         }).orElse(ResponseEntity.notFound().build());
     }
 
-    //Todo: trocar o nome de delete para deleteTurma, para evitar confusão com o delete de UsuarioController, já que ambos usam o mesmo verbo HTTP e endpoint parecido.
+    /**
+     * DELETE /api/turmas/{id}
 
+     */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        return turmaRepository.findById(id).map(t -> {
-            turmaRepository.delete(t);
+    public ResponseEntity<Void> deleteTurma(@PathVariable Long id) {
+        return turmaRepository.findById(id).map(turma -> {
+            turmaRepository.delete(turma);
             return ResponseEntity.noContent().<Void>build();
         }).orElse(ResponseEntity.notFound().build());
     }
